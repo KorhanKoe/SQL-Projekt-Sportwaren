@@ -148,15 +148,15 @@ CREATE TABLE Nicht_Veroeffentlichte_Projekte (
     Startdatum DATE,
     Enddatum DATE,
     Status VARCHAR2(50),
-    Verantwortlicher INT,
-    Mitarbeiter INT
+    Verantwortlicher_ID INT,
+    Mitarbeiter_ID INT
 );
 ALTER TABLE Nicht_Veroeffentlichte_Projekte
-ADD(CONSTRAINT vp_fk FOREIGN KEY (Verantwortlicher) 
+ADD(CONSTRAINT vp_fk FOREIGN KEY (Verantwortlicher_ID) 
 REFERENCES Ut_Vorgesetzte(Vorgesetzte_ID));
 
 ALTER TABLE Nicht_Veroeffentlichte_Projekte 
-ADD(CONSTRAINT mp_fk FOREIGN KEY (Mitarbeiter) 
+ADD(CONSTRAINT mp_fk FOREIGN KEY (Mitarbeiter_ID) 
 REFERENCES Ut_Mitarbeiter(Mitarbeiter_ID));
 
 ALTER TABLE Nicht_Veroeffentlichte_Projekte
@@ -343,19 +343,19 @@ VALUES(sp_sq.NEXTVAL, 'Jogginganzug', 'Laufen', 'Ein bequemer Jogginganzug.', 60
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 --Inserts in Nicht veröffentlichte Projekte
-INSERT INTO Nicht_Veroeffentlichte_Projekte(ProjektID, Bezeichnung, Beschreibung, Startdatum, Enddatum, Verantwortlicher, Mitarbeiter) 
+INSERT INTO Nicht_Veroeffentlichte_Projekte(ProjektID, Bezeichnung, Beschreibung, Startdatum, Enddatum, Verantwortlicher_ID, Mitarbeiter_ID) 
 VALUES(np_sq.NEXTVAL, 'Sportartikel-Innovation', 'Forschungs- und Entwicklungspro-jek', TO_DATE('2024-06-01', 'YYYY-MM-DD'), TO_DATE('2024-12-31', 'YYYY-MM-DD'), 1, 2);
 
-INSERT INTO Nicht_Veroeffentlichte_Projekte(ProjektID, Bezeichnung, Beschreibung, Startdatum, Enddatum, Verantwortlicher, Mitarbeiter) 
+INSERT INTO Nicht_Veroeffentlichte_Projekte(ProjektID, Bezeichnung, Beschreibung, Startdatum, Enddatum, Verantwortlicher_ID, Mitarbeiter_ID) 
 VALUES(np_sq.NEXTVAL, 'Sportartikel-Innovation', 'Forschungs- und Entwicklungspro-jek', TO_DATE('2024-06-01', 'YYYY-MM-DD'), TO_DATE('2024-12-31', 'YYYY-MM-DD'), 1, 3);
 
-INSERT INTO Nicht_Veroeffentlichte_Projekte(ProjektID, Bezeichnung, Beschreibung, Startdatum, Enddatum, Verantwortlicher, Mitarbeiter) 
+INSERT INTO Nicht_Veroeffentlichte_Projekte(ProjektID, Bezeichnung, Beschreibung, Startdatum, Enddatum, Verantwortlicher_ID, Mitarbeiter_ID) 
 VALUES(np_sq.NEXTVAL, 'Sportartikel-Innovation', 'Forschungs- und Entwicklungspro-jek', TO_DATE('2024-06-01', 'YYYY-MM-DD'), TO_DATE('2024-12-31', 'YYYY-MM-DD'), 1, 4);
 
-INSERT INTO Nicht_Veroeffentlichte_Projekte(ProjektID, Bezeichnung, Beschreibung, Startdatum, Enddatum, Verantwortlicher, Mitarbeiter) 
+INSERT INTO Nicht_Veroeffentlichte_Projekte(ProjektID, Bezeichnung, Beschreibung, Startdatum, Enddatum, Verantwortlicher_ID, Mitarbeiter_ID) 
 VALUES(np_sq.NEXTVAL, 'Neues Sneaker-Design', 'Entwicklung eines neuen Sneak-er-Designs.', TO_DATE('2024-04-01', 'YYYY-MM-DD'), TO_DATE('2024-09-30', 'YYYY-MM-DD'), 2, 1);
 
-INSERT INTO Nicht_Veroeffentlichte_Projekte(ProjektID, Bezeichnung, Beschreibung, Startdatum, Enddatum, Verantwortlicher, Mitarbeiter) 
+INSERT INTO Nicht_Veroeffentlichte_Projekte(ProjektID, Bezeichnung, Beschreibung, Startdatum, Enddatum, Verantwortlicher_ID, Mitarbeiter_ID) 
 VALUES(np_sq.NEXTVAL, 'Neues Sneaker-Design', 'Entwicklung eines neuen Sneak-er-Designs.', TO_DATE('2024-04-01', 'YYYY-MM-DD'), TO_DATE('2024-09-30', 'YYYY-MM-DD'), 2, 5);
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -457,6 +457,73 @@ WHERE table_name = 'DBMS_CRYPTO';
 SELECT * FROM Bestellungen;
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+--Prozedur
+CREATE OR REPLACE PROCEDURE berechne_durchschnittsgehalt
+IS
+    durchschnittsgehalt NUMBER;
+BEGIN
+    -- Berechne das durchschnittliche Gehalt
+    SELECT AVG(gehalt) INTO durchschnittsgehalt FROM ut_mitarbeiter;
+
+    -- Gib das durchschnittliche Gehalt aus
+    DBMS_OUTPUT.PUT_LINE('Das durchschnittliche Gehalt aller Mitarbeiter beträgt: ' || durchschnittsgehalt);
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('Es gibt keine Mitarbeiter in der Tabelle.');
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Ein Fehler ist aufgetreten: ' || SQLERRM);
+END berechne_durchschnittsgehalt;
+
+
+SET SERVEROUTPUT ON;
+BEGIN
+berechne_durchschnittsgehalt;
+END;
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+--Funktion
+CREATE OR REPLACE FUNCTION berechne_Bestellungen RETURN NUMBER IS
+    alle_Bestellungen NUMBER;
+BEGIN
+    -- Berechne die Gesamtanzahl der Bestellungen aus beiden Tabellen
+    SELECT COUNT(*) INTO alle_Bestellungen FROM Bestellungen;
+
+    -- Gib die Gesamtanzahl der Bestellungen zurück
+    RETURN alle_bestellungen;
+END berechne_Bestellungen;
+
+SET SERVEROUTPUT ON;
+DECLARE
+Bestellungen NUMBER;
+BEGIN
+Bestellungen:=berechne_Bestellungen;
+DBMS_OUTPUT.
+PUT_LINE('Die Gesamtzahl aller Bestellungen: ' || Bestellungen);
+END;
+
+
+CREATE OR REPLACE FUNCTION Verantwortliche_Projekte(eine_mitarbeiter_id IN NUMBER)
+RETURN NUMBER IS
+    anzahl_projekte NUMBER;
+BEGIN
+    SELECT COUNT(*) INTO anzahl_projekte
+    FROM Nicht_Veroeffentlichte_Projekte
+    WHERE Verantwortlicher_ID = eine_mitarbeiter_id;
+
+    RETURN anzahl_projekte;
+END;
+
+    SET SERVEROUTPUT ON;
+DECLARE
+Projekte NUMBER;
+BEGIN
+Projekte:= Verantwortliche_Projekte('2');
+DBMS_OUTPUT.
+PUT_LINE('Die Gesamtzahl aller Projekte: ' || Projekte);
+END;
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 --Fehlende Berechtigung für DBMS_Crypto
 SELECT * 
 FROM USER_TAB_PRIVS 
@@ -567,5 +634,3 @@ BEGIN
 DBMS_OUTPUT.PUT_LINE('Fehlercode: ' || SQLCODE);
 DBMS_OUTPUT.PUT_LINE('Fehlermeldung: ' || SQLERRM);
 END;
-
-
